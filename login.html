@@ -1,1 +1,55 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="assets/css/style.css"><title>Login FieldPress AI</title></head><body class="grid min-h-screen place-items-center p-5"><form id="loginForm" class="glass w-full max-w-md rounded-[2rem] p-7"><h1 class="text-3xl font-black">Login</h1><p class="mt-2 text-slate-400">Masuk ke AI newsroom Anda.</p><div class="mt-7 space-y-4"><input id="email" type="email" class="input" placeholder="Email" required><input id="password" type="password" class="input" placeholder="Password" minlength="6" required><button class="btn btn-primary w-full" type="submit">Login</button></div><p class="mt-5 text-center text-sm text-slate-400"><a class="text-cyan-300" href="register.html">Buat akun</a></p></form><script type="module" src="assets/js/auth.js"></script></body></html>
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="assets/css/style.css" />
+
+    <title>Login FieldPress AI</title>
+  </head>
+
+  <body class="grid min-h-screen place-items-center p-5">
+    <form id="loginForm" class="glass w-full max-w-md rounded-[2rem] p-7">
+      <h1 class="text-3xl font-black">Login</h1>
+
+      <p class="mt-2 text-slate-400">Masuk ke AI newsroom Anda.</p>
+
+      <div class="mt-7 space-y-4">
+        <input
+          id="email"
+          type="email"
+          class="input"
+          placeholder="Email"
+          required />
+
+        <input
+          id="password"
+          type="password"
+          class="input"
+          placeholder="Password"
+          minlength="6"
+          required />
+
+        <button class="btn btn-primary w-full" type="submit">Login</button>
+
+        <button
+          id="forgotPasswordBtn"
+          type="button"
+          class="w-full text-center text-sm text-cyan-400 hover:text-cyan-300">
+          Lupa Password?
+        </button>
+      </div>
+
+      <p class="mt-5 text-center text-sm text-slate-400">
+        Belum punya akun?
+
+        <a class="text-cyan-300" href="register.html"> Buat akun </a>
+      </p>
+    </form>
+
+    <script type="module" src="assets/js/auth.js"></script>
+  </body>
+</html>
