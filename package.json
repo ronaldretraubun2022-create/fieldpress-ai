@@ -1,0 +1,29 @@
+{
+  "name": "fieldpress-ai",
+  "version": "1.0.0",
+  "description": "Professional AI newsroom app for reporters and meeting note takers",
+  "scripts": {
+    "dev": "concurrently \"npm:server\" \"npm:client\"",
+    "client": "vite --host 0.0.0.0 --port 5173",
+    "server": "node server/server.js",
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@supabase/supabase-js": "^2.45.4",
+    "chart.js": "^4.5.1",
+    "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
+    "docx": "^9.7.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "jspdf": "^4.2.1",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.56.0",
+    "socket.io-client": "^4.8.3",
+    "vite": "^5.4.2"
+  }
+}

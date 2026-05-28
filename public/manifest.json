@@ -1,0 +1,22 @@
+{
+  "name": "FieldPress AI",
+  "short_name": "FieldPress",
+  "description": "AI Newsroom for reporters, notulen, and creators.",
+  "start_url": "/dashboard.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#22d3ee",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

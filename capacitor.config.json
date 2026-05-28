@@ -1,0 +1,17 @@
+{
+  "appId": "com.fieldpress.ai",
+  "appName": "FieldPress AI",
+  "webDir": "dist",
+  "server": {
+    "url": "https://YOUR_DOMAIN_HERE",
+    "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1800,
+      "backgroundColor": "#020617",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    }
+  }
+}

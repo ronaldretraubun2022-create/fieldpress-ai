@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="assets/css/style.css" />
+
+    <title>Dashboard</title>
+  </head>
+
+  <body>
+    <aside id="sidebar" class="sidebar p-5">
+      <div class="mb-8 flex items-center gap-3">
+        <div
+          class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400 font-black text-slate-950">
+          FP
+        </div>
+
+        <div>
+          <b>FieldPress AI</b>
+
+          <p class="text-xs text-slate-400">AI Newsroom</p>
+        </div>
+      </div>
+
+      <nav class="space-y-2">
+        <a class="nav-link" href="dashboard.html"> Dashboard </a>
+
+        <a class="nav-link" href="reporter.html"> Mode Wartawan </a>
+
+        <a class="nav-link" href="notulen.html"> Mode Notulen </a>
+
+        <a class="nav-link" href="pricing.html"> Pricing </a>
+
+        <a class="nav-link" href="settings.html"> Settings </a>
+
+        <button id="logoutBtn" class="nav-link w-full text-left">Logout</button>
+      </nav>
+    </aside>
+
+    <main class="app-shell min-h-screen">
+      <header
+        class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 p-4 backdrop-blur">
+        <div class="flex items-center justify-between">
+          <button id="menuBtn" class="btn btn-ghost lg:hidden">Menu</button>
+
+          <div>
+            <h1 class="text-xl font-black">Dashboard</h1>
+
+            <p class="text-sm text-slate-400">
+              Professional AI newsroom workflow
+            </p>
+          </div>
+
+          <span class="badge"> Live </span>
+        </div>
+      </header>
+
+      <div class="p-4 md:p-8">
+        <!-- QUOTA CARD -->
+        <div id="quotaCard" class="mb-8"></div>
+
+        <!-- STATS -->
+        <section class="grid gap-4 md:grid-cols-3">
+          <div class="card">
+            <p class="text-slate-400">Total Artikel</p>
+
+            <b id="statArticles" class="text-4xl"> 0 </b>
+          </div>
+
+          <div class="card">
+            <p class="text-slate-400">Total Rekaman</p>
+
+            <b id="statRecordings" class="text-4xl"> 0 </b>
+          </div>
+
+          <div class="card">
+            <p class="text-slate-400">Total Notulen</p>
+
+            <b id="statNotes" class="text-4xl"> 0 </b>
+          </div>
+        </section>
+
+        <!-- SEARCH -->
+        <section class="mt-6 grid gap-6 lg:grid-cols-3">
+          <div id="usageBox" class="card lg:col-span-1 skeleton h-28"></div>
+
+          <div class="card lg:col-span-2">
+            <div class="grid gap-3 sm:grid-cols-2">
+              <input
+                id="searchInput"
+                class="input"
+                placeholder="Search realtime artikel..." />
+
+              <select id="statusFilter">
+                <option value="">Semua status</option>
+
+                <option value="draft">Draft</option>
+
+                <option value="published">Published</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- RECENT ARTICLES -->
+        <h2 class="mt-8 text-2xl font-black">Recent Articles</h2>
+
+        <section id="recentArticles" class="mt-4 mobile-grid"></section>
+
+        <!-- ACTIVITY -->
+        <h2 class="mt-8 text-2xl font-black">Riwayat Aktivitas</h2>
+
+        <section id="activityList" class="mt-4 grid gap-3"></section>
+      </div>
+    </main>
+
+    <script type="module" src="assets/js/app.js"></script>
+  </body>
+</html>

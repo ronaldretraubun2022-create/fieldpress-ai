@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mode Wartawan - FieldPress AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+
+<body class="bg-slate-950 text-white">
+  <div class="min-h-screen md:flex">
+    <aside id="sidebar" class="w-full border-r border-white/10 bg-slate-950 p-6 md:min-h-screen md:w-64">
+      <div class="mb-10 flex items-center gap-3">
+        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-cyan-400 font-black text-black">FP</div>
+        <div>
+          <h1 class="font-black">FieldPress AI</h1>
+          <p class="text-sm text-slate-400">AI Newsroom</p>
+        </div>
+      </div>
+
+      <nav class="space-y-3 text-slate-300">
+        <a href="dashboard.html" class="block py-2 hover:text-cyan-300">Dashboard</a>
+        <a href="reporter.html" class="block py-2 text-cyan-300">Mode Wartawan</a>
+        <a href="notulen.html" class="block py-2 hover:text-cyan-300">Mode Notulen</a>
+        <a href="pricing.html" class="block py-2 hover:text-cyan-300">Pricing</a>
+        <a href="settings.html" class="block py-2 hover:text-cyan-300">Settings</a>
+        <button id="logoutBtn" class="py-2 text-left hover:text-red-300">Logout</button>
+      </nav>
+    </aside>
+
+    <section class="flex-1">
+      <header class="border-b border-white/10 p-6">
+        <h1 class="text-2xl font-black">Mode Wartawan</h1>
+        <p class="text-slate-400">AI reporter workflow</p>
+      </header>
+
+      <main class="p-6"></main>
+    </section>
+  </div>
+
+  <script type="module" src="./assets/js/reporter.js"></script>
+</body>
+</html>
