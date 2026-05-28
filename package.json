@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Professional AI newsroom app for reporters and meeting note takers",
   "scripts": {
-    "dev": "concurrently \"npm:server\" \"npm:client\"",
-    "client": "vite --host 0.0.0.0 --port 5173",
-    "server": "node server/server.js",
-    "start": "node server/server.js",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
+  "dev": "concurrently \"npm:server\" \"npm:client\"",
+  "client": "vite --host 0.0.0.0 --port 5173",
+  "server": "node server/server.js",
+  "start": "node server/server.js",
+  "build": "mkdir dist && xcopy *.html dist\\ /Y && xcopy assets dist\\assets\\ /E /I /Y && xcopy public dist\\ /E /I /Y",
+  "preview": "vite preview"
+},
   "dependencies": {
     "@capacitor/android": "^8.3.4",
     "@capacitor/core": "^8.3.4",
