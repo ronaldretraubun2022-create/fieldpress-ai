@@ -7,7 +7,7 @@
   "client": "vite --host 0.0.0.0 --port 5173",
   "server": "node server/server.js",
   "start": "node server/server.js",
-  "build": "mkdir dist && xcopy *.html dist\\ /Y && xcopy assets dist\\assets\\ /E /I /Y && xcopy public dist\\ /E /I /Y",
+  "build": "node scripts/build-static.js",
   "preview": "vite preview"
 },
   "dependencies": {
