@@ -104,6 +104,7 @@ async function reloadAdmin() {
   await renderAIUsageDashboard("#aiUsageDashboard");
   await renderAdminProductionPack();
   await renderBillingRequests();
+  await renderBillingHistory();
 }
 
 async function logout() {
@@ -141,7 +142,6 @@ async function getProfiles() {
   return data || [];
 }
 
-
 function getPlanLevel(plan) {
   return PLAN_LEVELS[plan] ?? 0;
 }
@@ -167,7 +167,10 @@ async function validatePlanUpgrade({ requestId, requestedPlan, userProfile }) {
   if (requestedLevel < currentLevel) {
     await supabase
       .from("billing_requests")
-      .update({ status: "rejected" })
+      .update({
+        status: "rejected",
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", requestId);
 
     await logAdminAction("Reject downgrade billing", userProfile?.id || null, {
@@ -178,7 +181,9 @@ async function validatePlanUpgrade({ requestId, requestedPlan, userProfile }) {
       reason: "Downgrade plan tidak diizinkan dari billing request.",
     });
 
-    throw new Error(`Tidak bisa downgrade dari ${currentPlan} ke ${requestedPlan}.`);
+    throw new Error(
+      `Tidak bisa downgrade dari ${currentPlan} ke ${requestedPlan}.`,
+    );
   }
 
   return true;
@@ -541,7 +546,11 @@ function bindBillingActions() {
           await validatePlanUpgrade({
             requestId,
             requestedPlan: plan,
-            userProfile: userProfile || { id: userId, email, plan: currentPlan },
+            userProfile: userProfile || {
+              id: userId,
+              email,
+              plan: currentPlan,
+            },
           });
 
           await activateUserPlanByEmail(email, plan);
@@ -553,7 +562,10 @@ function bindBillingActions() {
 
         const { error } = await supabase
           .from("billing_requests")
-          .update({ status: "approved" })
+          .update({
+            status: "approved",
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", requestId);
 
         if (error) throw error;
@@ -595,7 +607,10 @@ function bindBillingActions() {
 
         const { error } = await supabase
           .from("billing_requests")
-          .update({ status: "rejected" })
+          .update({
+            status: "rejected",
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", requestId);
 
         if (error) throw error;
@@ -619,6 +634,118 @@ function bindBillingActions() {
       }
     });
   });
+}
+
+async function renderBillingHistory() {
+  const target = document.querySelector("#billingHistory");
+  if (!target) return;
+
+  target.innerHTML = `
+    <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-slate-400">
+      Loading billing history...
+    </div>
+  `;
+
+  const { data, error } = await supabase
+    .from("billing_requests")
+    .select("*")
+    .in("status", ["approved", "rejected"])
+    .order("created_at", { ascending: false })
+    .limit(30);
+
+  if (error) {
+    target.innerHTML = `
+      <div class="rounded-2xl border border-red-400/20 bg-red-400/10 p-6 text-red-300">
+        ${error.message}
+      </div>
+    `;
+    return;
+  }
+
+  if (!data?.length) {
+    target.innerHTML = `
+      <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+        <h2 class="text-2xl font-black">Billing History</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          Riwayat billing approved dan rejected.
+        </p>
+        <p class="mt-5 text-sm text-slate-500">Belum ada billing history.</p>
+      </section>
+    `;
+    return;
+  }
+
+  const rows = await Promise.all(
+    data.map(async (item) => ({
+      ...item,
+      user_profile: await getProfileByUserId(item.user_id),
+    })),
+  );
+
+  target.innerHTML = `
+    <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+      <div>
+        <h2 class="text-2xl font-black">Billing History</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          Riwayat billing yang sudah approved atau rejected.
+        </p>
+      </div>
+
+      <div class="mt-6 grid gap-4">
+        ${rows.map(renderBillingHistoryCard).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderBillingHistoryCard(item) {
+  const name = item.user_profile?.full_name || "Unknown User";
+  const email = item.user_profile?.email || item.user_id || "-";
+
+  const statusClass =
+    item.status === "approved"
+      ? "bg-cyan-400/10 text-cyan-300"
+      : "bg-red-400/10 text-red-300";
+
+  return `
+    <article class="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+      <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-300">
+              ${item.request_type || "-"}
+            </span>
+
+            <span class="rounded-full px-3 py-1 text-xs font-bold ${statusClass}">
+              ${item.status || "-"}
+            </span>
+          </div>
+
+          <h3 class="mt-4 font-black">${name}</h3>
+          <p class="mt-1 text-sm text-slate-400">${email}</p>
+        </div>
+
+        <div class="text-left text-sm text-slate-300 md:text-right">
+          <p><b class="text-white">Amount:</b> ${rupiah(item.amount_idr)}</p>
+          <p class="mt-1"><b class="text-white">Created:</b> ${new Date(
+            item.created_at,
+          ).toLocaleString("id-ID")}</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid gap-2 text-sm text-slate-300 md:grid-cols-3">
+        <div><span class="font-bold text-white">Plan:</span> ${
+          item.plan_code || "-"
+        }</div>
+        <div><span class="font-bold text-white">Top Up:</span> ${
+          item.topup_code || "-"
+        }</div>
+        <div><span class="font-bold text-white">Request ID:</span> ${
+          item.id || "-"
+        }</div>
+      </div>
+    </article>
+  `;
 }
 
 init().catch((error) => {
