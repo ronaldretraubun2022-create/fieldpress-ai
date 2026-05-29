@@ -2,6 +2,7 @@ import { supabase, requireAuth, getProfile } from "./supabase.js";
 import { approveTopUpByEmail } from "./features/topup-auto.js";
 import { activateUserPlanByEmail } from "./features/upgrade-auto.js";
 import { toast } from "./utils.js";
+import { renderAdminProductionPack } from "./features/admin-production.js";
 
 let profile = null;
 
@@ -91,6 +92,7 @@ async function init() {
 
 async function reloadAdmin() {
   await renderRevenueAnalytics();
+  await renderAdminProductionPack();
   await renderBillingRequests();
 }
 
@@ -152,16 +154,36 @@ async function renderRevenueAnalytics() {
     const monthStart = monthStartISO();
     const todayStart = todayStartISO();
 
-    const approvedThisMonth = approved.filter((row) => row.created_at >= monthStart);
-    const approvedToday = approved.filter((row) => row.created_at >= todayStart);
+    const approvedThisMonth = approved.filter(
+      (row) => row.created_at >= monthStart,
+    );
+    const approvedToday = approved.filter(
+      (row) => row.created_at >= todayStart,
+    );
 
-    const totalRevenue = approved.reduce((sum, row) => sum + Number(row.amount_idr || 0), 0);
-    const monthlyRevenue = approvedThisMonth.reduce((sum, row) => sum + Number(row.amount_idr || 0), 0);
-    const todayRevenue = approvedToday.reduce((sum, row) => sum + Number(row.amount_idr || 0), 0);
-    const pendingValue = pending.reduce((sum, row) => sum + Number(row.amount_idr || 0), 0);
+    const totalRevenue = approved.reduce(
+      (sum, row) => sum + Number(row.amount_idr || 0),
+      0,
+    );
+    const monthlyRevenue = approvedThisMonth.reduce(
+      (sum, row) => sum + Number(row.amount_idr || 0),
+      0,
+    );
+    const todayRevenue = approvedToday.reduce(
+      (sum, row) => sum + Number(row.amount_idr || 0),
+      0,
+    );
+    const pendingValue = pending.reduce(
+      (sum, row) => sum + Number(row.amount_idr || 0),
+      0,
+    );
 
-    const upgradeApproved = approved.filter((row) => row.request_type === "plan_upgrade");
-    const topupApproved = approved.filter((row) => row.request_type === "topup");
+    const upgradeApproved = approved.filter(
+      (row) => row.request_type === "plan_upgrade",
+    );
+    const topupApproved = approved.filter(
+      (row) => row.request_type === "topup",
+    );
 
     const planCounts = profiles.reduce((acc, userProfile) => {
       const plan = userProfile.plan || "free";
@@ -174,9 +196,13 @@ async function renderRevenueAnalytics() {
     );
 
     const totalUsers = profiles.length;
-    const conversionRate = totalUsers ? Math.round((paidUsers.length / totalUsers) * 100) : 0;
+    const conversionRate = totalUsers
+      ? Math.round((paidUsers.length / totalUsers) * 100)
+      : 0;
     const arpu = totalUsers ? Math.round(totalRevenue / totalUsers) : 0;
-    const paidArpu = paidUsers.length ? Math.round(totalRevenue / paidUsers.length) : 0;
+    const paidArpu = paidUsers.length
+      ? Math.round(totalRevenue / paidUsers.length)
+      : 0;
 
     const topupStats = topupApproved.reduce((acc, row) => {
       const code = row.topup_code || "unknown";
@@ -185,7 +211,8 @@ async function renderRevenueAnalytics() {
     }, {});
 
     const bestTopup =
-      Object.entries(topupStats).sort((a, b) => b[1] - a[1])[0]?.[0] || "Belum ada";
+      Object.entries(topupStats).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+      "Belum ada";
 
     const groupedRevenue = groupRevenueByDay(approved);
 
