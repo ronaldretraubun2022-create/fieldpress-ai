@@ -650,7 +650,7 @@ async function renderBillingHistory() {
     .from("billing_requests")
     .select("*")
     .in("status", ["approved", "rejected"])
-    .order("created_at", { ascending: false })
+    .order("updated_at", { ascending: false })
     .limit(30);
 
   if (error) {
@@ -682,14 +682,33 @@ async function renderBillingHistory() {
     })),
   );
 
+  const filterValue =
+    document.querySelector("#billingHistoryFilter")?.value || "all";
+
+  const filteredRows =
+    filterValue === "all"
+      ? rows
+      : rows.filter((row) => row.status === filterValue);
+
   target.innerHTML = `
     <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-      <div>
-        <h2 class="text-2xl font-black">Billing History</h2>
-        <p class="mt-2 text-sm text-slate-400">
-          Riwayat billing yang sudah approved atau rejected.
-        </p>
-      </div>
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+  <div>
+    <h2 class="text-2xl font-black">Billing History</h2>
+    <p class="mt-2 text-sm text-slate-400">
+      Riwayat billing yang sudah approved atau rejected.
+    </p>
+  </div>
+
+  <select
+    id="billingHistoryFilter"
+    class="rounded-xl border border-white/10 bg-slate-950 px-4 py-2 text-sm"
+  >
+    <option value="all">Semua</option>
+    <option value="approved">Approved</option>
+    <option value="rejected">Rejected</option>
+  </select>
+</div>
 
       <div class="mt-6 grid gap-4">
         ${rows.map(renderBillingHistoryCard).join("")}
