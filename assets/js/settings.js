@@ -26,6 +26,19 @@ function showStatus(message, type = "info") {
   statusBox.classList.remove("hidden");
 }
 
+function ensureRoleOption(role) {
+  if (!roleInput || !role || !roleInput.options) return;
+
+  const exists = [...roleInput.options].some((option) => option.value === role);
+
+  if (!exists) {
+    const option = document.createElement("option");
+    option.value = role;
+    option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+    roleInput.appendChild(option);
+  }
+}
+
 async function ensureProfile() {
   const existing = await getProfile();
   if (existing) return existing;
@@ -39,9 +52,11 @@ async function ensureProfile() {
   const payload = {
     id: currentUser.id,
     email: currentUser.email,
-    full_name: currentUser.user_metadata?.full_name || currentUser.email || "User",
+    full_name:
+      currentUser.user_metadata?.full_name || currentUser.email || "User",
     role: "user",
     plan: "free",
+    status: "active",
   };
 
   const { data, error } = await supabase
@@ -58,12 +73,21 @@ async function ensureProfile() {
 function fillForm() {
   if (!profile || !user) return;
 
-  fullNameInput.value = profile.full_name || user.user_metadata?.full_name || "";
+  fullNameInput.value =
+    profile.full_name || user.user_metadata?.full_name || "";
+
   emailInput.value = profile.email || user.email || "";
-  roleInput.value = ["user", "wartawan", "notulen"].includes(profile.role)
-    ? profile.role
-    : "user";
-  planInput.value = profile.plan || "free";
+
+  if (roleInput) {
+    ensureRoleOption(profile.role);
+    roleInput.value = profile.role || "user";
+    roleInput.disabled = profile.role === "owner" || profile.role === "admin";
+  }
+
+  if (planInput) {
+    planInput.value = profile.plan || "free";
+    planInput.disabled = true;
+  }
 }
 
 async function saveProfile(event) {
@@ -75,7 +99,6 @@ async function saveProfile(event) {
     setLoading(btn, true, "Menyimpan...");
 
     const fullName = fullNameInput.value.trim();
-    const role = roleInput.value;
 
     if (!fullName) {
       throw new Error("Nama lengkap wajib diisi.");
@@ -83,7 +106,6 @@ async function saveProfile(event) {
 
     const payload = {
       full_name: fullName,
-      role,
       updated_at: new Date().toISOString(),
     };
 
@@ -108,10 +130,12 @@ async function saveProfile(event) {
       user_id: profile.id,
       action: "Update profile settings",
       metadata: {
-        role,
+        role: profile.role,
+        plan: profile.plan,
       },
     });
 
+    fillForm();
     showStatus("Profile berhasil disimpan.");
     toast("Profile berhasil disimpan.");
   } catch (error) {
