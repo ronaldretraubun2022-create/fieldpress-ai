@@ -690,6 +690,15 @@ async function renderBillingHistory() {
       ? rows
       : rows.filter((row) => row.status === filterValue);
 
+  const approvedCount = rows.filter((row) => row.status === "approved").length;
+
+  const rejectedCount = rows.filter((row) => row.status === "rejected").length;
+
+  const successRate =
+    approvedCount + rejectedCount
+      ? Math.round((approvedCount / (approvedCount + rejectedCount)) * 100)
+      : 0;
+
   target.innerHTML = `
     <section class="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -699,6 +708,29 @@ async function renderBillingHistory() {
       Riwayat billing yang sudah approved atau rejected.
     </p>
   </div>
+
+  <div class="mt-6 grid gap-4 md:grid-cols-3">
+  <div class="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-5">
+    <p class="text-sm text-emerald-300">Approved</p>
+    <p class="mt-2 text-3xl font-black text-white">
+      ${approvedCount}
+    </p>
+  </div>
+
+  <div class="rounded-2xl border border-red-400/20 bg-red-400/10 p-5">
+    <p class="text-sm text-red-300">Rejected</p>
+    <p class="mt-2 text-3xl font-black text-white">
+      ${rejectedCount}
+    </p>
+  </div>
+
+  <div class="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-5">
+    <p class="text-sm text-cyan-300">Success Rate</p>
+    <p class="mt-2 text-3xl font-black text-white">
+      ${successRate}%
+    </p>
+  </div>
+</div>
 
   <select
     id="billingHistoryFilter"
