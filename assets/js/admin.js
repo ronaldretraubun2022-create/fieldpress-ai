@@ -4,9 +4,16 @@ import { activateUserPlanByEmail } from "./features/upgrade-auto.js";
 import { toast } from "./utils.js";
 import { renderAdminProductionPack } from "./features/admin-production.js";
 import { renderAIUsageDashboard } from "./features/ai-usage-dashboard.js";
-import { renderAIUsageDashboard } from "./features/ai-usage-dashboard.js";
 
 let profile = null;
+
+const PLAN_LEVELS = {
+  free: 0,
+  basic: 1,
+  pro: 2,
+  enterprise: 3,
+  enterprise_internal: 4,
+};
 
 function rupiah(value) {
   return `Rp${Number(value || 0).toLocaleString("id-ID")}`;
@@ -132,6 +139,49 @@ async function getProfiles() {
 
   if (error) return [];
   return data || [];
+}
+
+
+function getPlanLevel(plan) {
+  return PLAN_LEVELS[plan] ?? 0;
+}
+
+async function logAdminAction(action, targetUserId = null, metadata = {}) {
+  await supabase.from("admin_audit_logs").insert({
+    admin_id: profile?.id || null,
+    target_user_id: targetUserId,
+    action,
+    metadata,
+  });
+}
+
+async function validatePlanUpgrade({ requestId, requestedPlan, userProfile }) {
+  const currentPlan = userProfile?.plan || "free";
+  const currentLevel = getPlanLevel(currentPlan);
+  const requestedLevel = getPlanLevel(requestedPlan);
+
+  if (!requestedPlan) {
+    throw new Error("Plan request kosong.");
+  }
+
+  if (requestedLevel < currentLevel) {
+    await supabase
+      .from("billing_requests")
+      .update({ status: "rejected" })
+      .eq("id", requestId);
+
+    await logAdminAction("Reject downgrade billing", userProfile?.id || null, {
+      request_id: requestId,
+      email: userProfile?.email || null,
+      current_plan: currentPlan,
+      requested_plan: requestedPlan,
+      reason: "Downgrade plan tidak diizinkan dari billing request.",
+    });
+
+    throw new Error(`Tidak bisa downgrade dari ${currentPlan} ke ${requestedPlan}.`);
+  }
+
+  return true;
 }
 
 async function renderRevenueAnalytics() {
@@ -418,48 +468,38 @@ ${item.whatsapp_message || ""}
         </div>
 
         <div class="grid w-full gap-3 lg:w-64">
-          ${
-            item.status === "pending"
-              ? `
-                <button
-                  data-id="${item.id}"
-                  data-type="${item.request_type || ""}"
-                  data-email="${email}"
-                  data-user-id="${item.user_id || ""}"
-                  data-plan="${item.plan_code || ""}"
-                  data-current-plan="${currentPlan}"
-                  data-topup="${item.topup_code || ""}"
-                  data-amount="${item.amount_idr || 0}"
-                  class="approve-btn rounded-2xl bg-cyan-400 px-6 py-4 font-black text-black hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Approve
-                </button>
-
-                <button
-                  data-id="${item.id}"
-                  data-user-id="${item.user_id || ""}"
-                  data-email="${email}"
-                  data-type="${item.request_type || ""}"
-                  data-plan="${item.plan_code || ""}"
-                  data-topup="${item.topup_code || ""}"
-                  data-amount="${item.amount_idr || 0}"
-                  class="reject-btn rounded-2xl border border-red-400/20 bg-red-400/10 px-6 py-4 font-bold text-red-300 hover:bg-red-400/20"
-                >
-                  Reject
-                </button>
-              `
-              : `
-                <div class="rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 text-center font-bold text-slate-400">
-                  ${item.status === "approved" ? "Approved" : "Rejected"}
-                </div>
-              `
-          }
+          <button
+            data-id="${item.id}"
+            data-type="${item.request_type || ""}"
+            data-email="${email}"
+            data-user-id="${item.user_id || ""}"
+            data-plan="${item.plan_code || ""}"
+            data-current-plan="${currentPlan}"
+            data-topup="${item.topup_code || ""}"
+            data-amount="${item.amount_idr || 0}"
+            class="approve-btn rounded-2xl bg-cyan-400 px-6 py-4 font-black text-black hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Approve
+          </button>
 
           <button
             data-wa="${encodeURIComponent(item.whatsapp_message || "")}"
             class="wa-btn rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 font-bold hover:bg-white/10"
           >
             Open WhatsApp
+          </button>
+
+          <button
+            data-id="${item.id}"
+            data-user-id="${item.user_id || ""}"
+            data-email="${email}"
+            data-type="${item.request_type || ""}"
+            data-plan="${item.plan_code || ""}"
+            data-topup="${item.topup_code || ""}"
+            data-amount="${item.amount_idr || 0}"
+            class="reject-btn rounded-2xl border border-red-400/20 bg-red-400/10 px-6 py-4 font-bold text-red-300 hover:bg-red-400/20"
+          >
+            Reject
           </button>
         </div>
       </div>
@@ -487,12 +527,23 @@ function bindBillingActions() {
         const requestId = btn.dataset.id;
         const type = btn.dataset.type;
         const email = btn.dataset.email;
+        const userId = btn.dataset.userId;
         const plan = btn.dataset.plan;
+        const currentPlan = btn.dataset.currentPlan || "free";
         const topup = btn.dataset.topup;
+        const amount = Number(btn.dataset.amount || 0);
 
         if (!email) throw new Error("Email user tidak ditemukan di profiles.");
 
+        const userProfile = userId ? await getProfileByUserId(userId) : null;
+
         if (type === "plan_upgrade") {
+          await validatePlanUpgrade({
+            requestId,
+            requestedPlan: plan,
+            userProfile: userProfile || { id: userId, email, plan: currentPlan },
+          });
+
           await activateUserPlanByEmail(email, plan);
         } else if (type === "topup") {
           await approveTopUpByEmail(email, topup);
@@ -507,6 +558,18 @@ function bindBillingActions() {
 
         if (error) throw error;
 
+        await logAdminAction("Approve billing", userId || null, {
+          request_id: requestId,
+          email,
+          type,
+          plan,
+          current_plan: currentPlan,
+          topup,
+          amount_idr: amount,
+          status: "approved",
+          approved_at: new Date().toISOString(),
+        });
+
         toast("Request berhasil diapprove.");
         await reloadAdmin();
       } catch (error) {
@@ -514,6 +577,7 @@ function bindBillingActions() {
         toast(error.message, "error");
         btn.disabled = false;
         btn.textContent = "Approve";
+        await reloadAdmin();
       }
     });
   });
@@ -522,6 +586,12 @@ function bindBillingActions() {
     btn.addEventListener("click", async () => {
       try {
         const requestId = btn.dataset.id;
+        const userId = btn.dataset.userId;
+        const email = btn.dataset.email;
+        const type = btn.dataset.type;
+        const plan = btn.dataset.plan;
+        const topup = btn.dataset.topup;
+        const amount = Number(btn.dataset.amount || 0);
 
         const { error } = await supabase
           .from("billing_requests")
@@ -529,6 +599,17 @@ function bindBillingActions() {
           .eq("id", requestId);
 
         if (error) throw error;
+
+        await logAdminAction("Reject billing", userId || null, {
+          request_id: requestId,
+          email,
+          type,
+          plan,
+          topup,
+          amount_idr: amount,
+          status: "rejected",
+          rejected_at: new Date().toISOString(),
+        });
 
         toast("Request berhasil direject.");
         await reloadAdmin();
