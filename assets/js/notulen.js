@@ -17,136 +17,106 @@ let session = null;
 let profile = null;
 let transcriptId = null;
 
-function buildMeetingContent() {
-  return `
-Judul:
-${$("#meetingTitle")?.value || ""}
-
-Tanggal:
-${$("#meetingDate")?.value || ""}
-
-Peserta:
-${$("#participants")?.value || ""}
-
-Ringkasan:
-${$("#summary")?.value || ""}
-
-Keputusan:
-${$("#decisions")?.value || ""}
-
-Action Items:
-${$("#actionItems")?.value || ""}
-`.trim();
-}
-
 function ensureNotulenUI() {
   const main = document.querySelector("main");
   if (!main || $("#transcript")) return;
 
   main.innerHTML = `
-    <div id="usageBox" class="mb-8"></div>
+  <div id="usageBox" class="mb-8"></div>
 
-    <section class="grid gap-6 xl:grid-cols-2">
-      <div class="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
-        <div class="mb-6">
-          <h2 class="text-3xl font-black">Input Audio Rapat</h2>
-          <p class="mt-2 text-sm text-slate-400">Rekam atau upload audio rapat untuk dibuat transcript otomatis.</p>
-        </div>
-
-        <div class="space-y-5">
-          <div class="flex flex-col gap-3 sm:flex-row">
-            <button id="recordBtn" class="rounded-2xl bg-cyan-400 px-6 py-4 font-bold text-black transition hover:bg-cyan-300">
-              Mulai Rekam
-            </button>
-
-            <label class="flex cursor-pointer items-center justify-center rounded-2xl border border-white/10 bg-slate-950 px-6 py-4 font-bold text-slate-200 hover:bg-white/10">
-              Upload Audio
-              <input id="audioUpload" type="file" accept="audio/*" class="hidden" />
-            </label>
-          </div>
-
-          <button id="transcribeBtn" class="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 font-bold text-white hover:bg-white/10">
-            Speech to Text
-          </button>
-
-          <textarea
-            id="transcript"
-            class="min-h-[360px] w-full resize-y rounded-3xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
-            placeholder="Transcript rapat akan muncul di sini..."
-          ></textarea>
-        </div>
+  <section class="grid gap-6 xl:grid-cols-2">
+    <div class="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
+      <div class="mb-6">
+        <h2 class="text-3xl font-black">Input Audio Rapat</h2>
+        <p class="mt-2 text-sm text-slate-400">Rekam atau upload audio rapat untuk dibuat transcript otomatis.</p>
       </div>
 
-      <div class="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
-        <div class="mb-6">
-          <h2 class="text-3xl font-black">Generate Notulen</h2>
-          <p class="mt-2 text-sm text-slate-400">AI akan membuat ringkasan, keputusan, peserta, dan action items.</p>
-        </div>
-
-        <div class="space-y-5">
-          <button id="generateBtn" class="w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-6 py-4 font-bold text-black transition hover:opacity-90">
-            Generate Notulen
+      <div class="space-y-5">
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <button id="recordBtn" class="rounded-2xl bg-cyan-400 px-6 py-4 font-bold text-black transition hover:bg-cyan-300">
+            Mulai Rekam
           </button>
 
-          <div class="grid gap-4 md:grid-cols-2">
-            <input
-              id="meetingTitle"
-              class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
-              placeholder="Judul rapat"
-            />
+          <label class="flex cursor-pointer items-center justify-center rounded-2xl border border-white/10 bg-slate-950 px-6 py-4 font-bold text-slate-200 hover:bg-white/10">
+            Upload Audio
+            <input id="audioUpload" type="file" accept="audio/*" class="hidden" />
+          </label>
+        </div>
 
-            <input
-              id="meetingDate"
-              type="date"
-              class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-slate-100 outline-none focus:border-cyan-400"
-            />
-          </div>
+        <button id="transcribeBtn" class="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 font-bold text-white hover:bg-white/10">
+          Speech to Text
+        </button>
 
-          <textarea
-            id="participants"
-            class="min-h-[96px] w-full resize-y rounded-2xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
-            placeholder="Peserta rapat"
-          ></textarea>
+        <textarea
+          id="transcript"
+          class="min-h-[360px] w-full resize-y rounded-3xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
+          placeholder="Transcript rapat akan muncul di sini..."
+        ></textarea>
+      </div>
+    </div>
 
-          <textarea
-            id="summary"
-            class="min-h-[150px] w-full resize-y rounded-2xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
-            placeholder="Ringkasan rapat"
-          ></textarea>
+    <div class="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
+      <div class="mb-6">
+        <h2 class="text-3xl font-black">Generate Notulen</h2>
+        <p class="mt-2 text-sm text-slate-400">AI akan membuat ringkasan, keputusan, peserta, dan action items.</p>
+      </div>
 
-          <textarea
-            id="decisions"
-            class="min-h-[120px] w-full resize-y rounded-2xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
-            placeholder="Keputusan rapat"
-          ></textarea>
+      <div class="space-y-5">
+        <button id="generateBtn" class="w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-6 py-4 font-bold text-black transition hover:opacity-90">
+          Generate Notulen
+        </button>
 
-          <textarea
-            id="actionItems"
-            class="min-h-[120px] w-full resize-y rounded-2xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
-            placeholder="Action items"
-          ></textarea>
+        <div class="grid gap-4 md:grid-cols-2">
+          <input
+            id="meetingTitle"
+            class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
+            placeholder="Judul rapat"
+          />
 
-          <div class="grid gap-4 sm:grid-cols-3">
-            <button id="downloadTxtBtn" class="rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 font-bold text-white hover:bg-white/10">
-              Download TXT
-            </button>
+          <input
+            id="meetingDate"
+            type="date"
+            class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-slate-100 outline-none focus:border-cyan-400"
+          />
+        </div>
 
-            <button id="downloadPdfBtn" class="rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 font-bold text-white hover:bg-white/10">
-              Export PDF
-            </button>
+        <textarea
+          id="participants"
+          class="min-h-[96px] w-full resize-y rounded-2xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
+          placeholder="Peserta rapat"
+        ></textarea>
 
-            <button id="downloadDocxBtn" class="rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 font-bold text-white hover:bg-white/10">
-              Export DOCX
-            </button>
+        <textarea
+          id="summary"
+          class="min-h-[150px] w-full resize-y rounded-2xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
+          placeholder="Ringkasan rapat"
+        ></textarea>
 
-            <button id="saveBtn" class="sm:col-span-3 rounded-2xl bg-cyan-400 px-6 py-4 font-bold text-black hover:bg-cyan-300">
-              Simpan Notulen
-            </button>
-          </div>
+        <textarea
+          id="decisions"
+          class="min-h-[120px] w-full resize-y rounded-2xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
+          placeholder="Keputusan rapat"
+        ></textarea>
+
+        <textarea
+          id="actionItems"
+          class="min-h-[120px] w-full resize-y rounded-2xl border border-white/10 bg-slate-950/80 p-5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-400"
+          placeholder="Action items"
+        ></textarea>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <button id="downloadTxtBtn" class="rounded-2xl border border-white/10 bg-white/[0.05] px-6 py-4 font-bold text-white hover:bg-white/10">
+            Download TXT
+          </button>
+
+          <button id="saveBtn" class="rounded-2xl bg-cyan-400 px-6 py-4 font-bold text-black hover:bg-cyan-300">
+            Simpan Notulen
+          </button>
         </div>
       </div>
-    </section>
-  `;
+    </div>
+  </section>
+`;
 }
 
 async function ensureProfile() {
@@ -169,7 +139,6 @@ async function ensureProfile() {
     .upsert(payload)
     .select("*")
     .single();
-
   if (error) throw error;
   return data;
 }
@@ -202,8 +171,6 @@ async function init() {
   $("#transcribeBtn")?.addEventListener("click", transcribeMeeting);
   $("#generateBtn")?.addEventListener("click", generateMeetingNote);
   $("#downloadTxtBtn")?.addEventListener("click", downloadTXT);
-  $("#downloadPdfBtn")?.addEventListener("click", downloadPDF);
-  $("#downloadDocxBtn")?.addEventListener("click", downloadDOCX);
   $("#saveBtn")?.addEventListener("click", saveMeetingNote);
 
   $("#logoutBtn")?.addEventListener("click", async () => {
@@ -283,9 +250,8 @@ async function transcribeMeeting() {
       "/transcribe",
       audioBlob,
       { mode: "meeting" },
-      session.access_token
+      session.access_token,
     );
-
     $("#transcript").value = data.text || "";
 
     const { data: transcript, error } = await supabase
@@ -332,7 +298,7 @@ async function generateMeetingNote() {
     const data = await apiPost(
       "/ai/meeting-note",
       { transcript },
-      session.access_token
+      session.access_token,
     );
 
     $("#summary").value = data.summary || "";
@@ -388,7 +354,6 @@ async function saveMeetingNote() {
       .insert(payload)
       .select("*")
       .single();
-
     if (error) throw error;
 
     await supabase.from("activity_logs").insert({
@@ -404,17 +369,27 @@ async function saveMeetingNote() {
 }
 
 function downloadTXT() {
-  downloadText("notulen-rapat.txt", buildMeetingContent());
-}
+  const content = `
+Judul:
+${$("#meetingTitle").value}
 
-async function downloadPDF() {
-  await exportPDF($("#meetingTitle")?.value || "Notulen Rapat", buildMeetingContent());
-  toast("PDF berhasil di-export");
-}
+Tanggal:
+${$("#meetingDate").value}
 
-async function downloadDOCX() {
-  await exportDOCX(buildMeetingContent());
-  toast("DOCX berhasil di-export");
+Peserta:
+${$("#participants").value}
+
+Ringkasan:
+${$("#summary").value}
+
+Keputusan:
+${$("#decisions").value}
+
+Action Items:
+${$("#actionItems").value}
+`;
+
+  downloadText("notulen-rapat.txt", content.trim());
 }
 
 init().catch((error) => {
