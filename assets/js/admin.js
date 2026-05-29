@@ -379,26 +379,6 @@ async function renderBillingRequests() {
   bindBillingActions();
 }
 
-  if (!data?.length) {
-    target.innerHTML = `
-      <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-slate-400">
-        Belum ada request.
-      </div>
-    `;
-    return;
-  }
-
-  const enriched = await Promise.all(
-    data.map(async (item) => ({
-      ...item,
-      user_profile: await getProfileByUserId(item.user_id),
-    })),
-  );
-
-  target.innerHTML = enriched.map((item) => billingCard(item)).join("");
-  bindBillingActions();
-}
-
 function billingCard(item) {
   const email = item.user_profile?.email || "";
   const name = item.user_profile?.full_name || "Unknown User";
@@ -442,9 +422,8 @@ ${item.whatsapp_message || ""}
             data-plan="${item.plan_code || ""}"
             data-topup="${item.topup_code || ""}"
             class="approve-btn rounded-2xl bg-cyan-400 px-6 py-4 font-black text-black hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
-            ${item.status === "approved" ? "disabled" : ""}
           >
-            ${item.status === "approved" ? "Approved" : "Approve"}
+            Approve
           </button>
 
           <button
