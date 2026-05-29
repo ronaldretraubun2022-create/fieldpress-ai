@@ -727,47 +727,69 @@ function renderBillingHistoryCard(item) {
   const name = item.user_profile?.full_name || "Unknown User";
   const email = item.user_profile?.email || item.user_id || "-";
 
-  const statusClass =
-    item.status === "approved"
-      ? "bg-cyan-400/10 text-cyan-300"
-      : "bg-red-400/10 text-red-300";
+  const isApproved = item.status === "approved";
+
+  const statusClass = isApproved
+    ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+    : "border-red-400/20 bg-red-400/10 text-red-300";
+
+  const typeLabel =
+    item.request_type === "plan_upgrade"
+      ? "Plan Upgrade"
+      : item.request_type === "topup"
+        ? "Top Up"
+        : item.request_type || "-";
+
+  const processedAt = item.updated_at || item.created_at;
 
   return `
-    <article class="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
-      <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
+    <article class="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-xl">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div class="flex-1">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-slate-300">
-              ${item.request_type || "-"}
+            <span class="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-black uppercase tracking-wide text-cyan-300">
+              ${typeLabel}
             </span>
 
-            <span class="rounded-full px-3 py-1 text-xs font-bold ${statusClass}">
-              ${item.status || "-"}
+            <span class="rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wide ${statusClass}">
+              ${item.status}
             </span>
           </div>
 
-          <h3 class="mt-4 font-black">${name}</h3>
-          <p class="mt-1 text-sm text-slate-400">${email}</p>
+          <h3 class="mt-4 text-xl font-black">${name}</h3>
+          <p class="mt-1 break-all text-sm text-slate-400">${email}</p>
+
+          <div class="mt-5 grid gap-3 text-sm text-slate-300 md:grid-cols-2">
+            <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <p class="text-xs text-slate-500">Amount</p>
+              <p class="mt-1 text-lg font-black text-white">${rupiah(item.amount_idr)}</p>
+            </div>
+
+            <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <p class="text-xs text-slate-500">Plan / Top Up</p>
+              <p class="mt-1 font-bold text-white">
+                ${item.plan_code || item.topup_code || "-"}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div class="text-left text-sm text-slate-300 md:text-right">
-          <p><b class="text-white">Amount:</b> ${rupiah(item.amount_idr)}</p>
-          <p class="mt-1"><b class="text-white">Created:</b> ${new Date(
-            item.created_at,
-          ).toLocaleString("id-ID")}</p>
-        </div>
-      </div>
+        <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-slate-300 lg:w-80">
+          <p>
+            <span class="text-slate-500">Requested:</span><br />
+            <b>${new Date(item.created_at).toLocaleString("id-ID")}</b>
+          </p>
 
-      <div class="mt-4 grid gap-2 text-sm text-slate-300 md:grid-cols-3">
-        <div><span class="font-bold text-white">Plan:</span> ${
-          item.plan_code || "-"
-        }</div>
-        <div><span class="font-bold text-white">Top Up:</span> ${
-          item.topup_code || "-"
-        }</div>
-        <div><span class="font-bold text-white">Request ID:</span> ${
-          item.id || "-"
-        }</div>
+          <p class="mt-3">
+            <span class="text-slate-500">Processed:</span><br />
+            <b>${new Date(processedAt).toLocaleString("id-ID")}</b>
+          </p>
+
+          <p class="mt-3 break-all text-xs text-slate-500">
+            Request ID:<br />
+            ${item.id || "-"}
+          </p>
+        </div>
       </div>
     </article>
   `;
