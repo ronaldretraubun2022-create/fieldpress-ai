@@ -34,22 +34,41 @@
       </header>
 
       <main class="space-y-10 p-6">
-        <section><div id="revenueAnalytics"></div></section>
-        <section><div id="userManagementAdmin"></div></section>
-        <section><div id="revenueChart"></div></section>
-        <section><div id="adminAuditLogs"></div></section>
+        <main class="space-y-10 p-6">
+  <section>
+    <div id="revenueAnalytics"></div>
+  </section>
 
-        <section>
-          <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 class="text-2xl font-black">Billing Requests</h2>
-              <p class="text-sm text-slate-400">Permintaan upgrade dan top up user.</p>
-            </div>
-            <button id="refreshBtn" class="rounded-2xl border border-white/10 bg-white/[0.05] px-5 py-3 font-bold hover:bg-white/10">Refresh</button>
-          </div>
-          <div id="billingRequests" class="grid gap-5"></div>
-        </section>
-      </main>
+  <section>
+    <div id="userManagementAdmin"></div>
+  </section>
+
+  <section>
+    <div id="revenueChart"></div>
+  </section>
+
+  <section>
+    <div id="adminAuditLogs"></div>
+  </section>
+
+  <section>
+    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 class="text-2xl font-black">Billing Requests</h2>
+        <p class="text-sm text-slate-400">Permintaan upgrade dan top up user.</p>
+      </div>
+
+      <button
+        id="refreshBtn"
+        class="rounded-2xl border border-white/10 bg-white/[0.05] px-5 py-3 font-bold hover:bg-white/10"
+      >
+        Refresh
+      </button>
+    </div>
+
+    <div id="billingRequests" class="grid gap-5"></div>
+  </section>
+</main>
     </section>
   </div>
   <script type="module" src="./assets/js/admin.js"></script>
