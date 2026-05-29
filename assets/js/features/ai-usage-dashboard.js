@@ -4,6 +4,22 @@ function rupiah(v) {
   return `Rp${Number(v || 0).toLocaleString("id-ID")}`;
 }
 
+function getUserDisplayName(userId, profiles) {
+  const profile = profiles.find((item) => item.id === userId);
+
+  if (!profile) {
+    return {
+      name: userId || "-",
+      email: "",
+    };
+  }
+
+  return {
+    name: profile.full_name || profile.email || userId,
+    email: profile.email || "",
+  };
+}
+
 export async function renderAIUsageDashboard(selector = "#aiUsageDashboard") {
   const target =
     typeof selector === "string" ? document.querySelector(selector) : selector;
@@ -23,20 +39,24 @@ export async function renderAIUsageDashboard(selector = "#aiUsageDashboard") {
   startMonth.setDate(1);
   startMonth.setHours(0, 0, 0, 0);
 
-  const { data: logs, error } = await supabase
-    .from("ai_usage_logs")
-    .select("user_id,tokens_used,created_at");
+  const [{ data: logs, error }, { data: profiles, error: profileError }] =
+    await Promise.all([
+      supabase.from("ai_usage_logs").select("user_id,tokens_used,created_at"),
 
-  if (error) {
+      supabase.from("profiles").select("id,email,full_name"),
+    ]);
+
+  if (error || profileError) {
     target.innerHTML = `
       <section class="rounded-3xl border border-red-500/20 bg-red-500/10 p-6 text-red-300">
-        ${error.message}
+        ${error?.message || profileError?.message}
       </section>
     `;
     return;
   }
 
   const rows = logs || [];
+  const userProfiles = profiles || [];
 
   const todayCount = rows.filter(
     (row) => new Date(row.created_at) >= startToday,
@@ -62,6 +82,9 @@ export async function renderAIUsageDashboard(selector = "#aiUsageDashboard") {
   });
 
   const topUser = Object.entries(usageByUser).sort((a, b) => b[1] - a[1])[0];
+  const topUserProfile = topUser
+    ? getUserDisplayName(topUser[0], userProfiles)
+    : null;
 
   const estimatedCostUsd = (totalTokens / 1000000) * 5;
   const estimatedCostIdr = Math.round(estimatedCostUsd * 16000);
@@ -88,8 +111,11 @@ export async function renderAIUsageDashboard(selector = "#aiUsageDashboard") {
 
         <div class="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
           <p class="text-sm text-slate-400">Top User AI</p>
-          <p class="mt-2 break-all text-sm font-bold">
-            ${topUser ? topUser[0] : "-"}
+          <p class="mt-2 break-words text-sm font-bold">
+            ${topUserProfile ? topUserProfile.name : "-"}
+          </p>
+          <p class="mt-1 break-words text-xs text-slate-400">
+            ${topUserProfile?.email || ""}
           </p>
           <p class="mt-2 text-xs text-slate-500">
             ${topUser ? `${Number(topUser[1]).toLocaleString("id-ID")} tokens` : "Belum ada data"}
