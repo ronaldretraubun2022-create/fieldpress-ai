@@ -6,13 +6,19 @@ const registerForm = $("#registerForm");
 const logoutBtn = $("#logoutBtn");
 const forgotPasswordBtn = $("#forgotPasswordBtn");
 
+function showLoginUrlError() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("error") === "suspended") {
+    toast("Akun Anda sedang dinonaktifkan oleh admin.", "error");
+  }
+}
+
 async function sendPasswordReset(email) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/login.html`,
   });
 
   if (error) throw error;
-
   toast("Link reset password telah dikirim ke email Anda.");
 }
 
@@ -75,9 +81,7 @@ registerForm?.addEventListener("submit", async (e) => {
       email,
       password,
       options: {
-        data: {
-          full_name,
-        },
+        data: { full_name },
       },
     });
 
@@ -125,3 +129,5 @@ logoutBtn?.addEventListener("click", async () => {
   await supabase.auth.signOut();
   location.href = "login.html";
 });
+
+showLoginUrlError();

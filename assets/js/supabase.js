@@ -48,6 +48,24 @@ export async function getProfile() {
   return data;
 }
 
+export async function ensureActiveProfile() {
+  const profile = await getProfile();
+
+  if (!profile) {
+    await supabase.auth.signOut();
+    window.location.href = "login.html";
+    return null;
+  }
+
+  if (profile.status === "suspended" && profile.role !== "owner") {
+    await supabase.auth.signOut();
+    window.location.href = "login.html?error=suspended";
+    return null;
+  }
+
+  return profile;
+}
+
 export async function requireAuth() {
   const session = await getSession();
 
@@ -55,6 +73,9 @@ export async function requireAuth() {
     window.location.href = "login.html";
     return null;
   }
+
+  const profile = await ensureActiveProfile();
+  if (!profile) return null;
 
   return session;
 }
