@@ -47,7 +47,9 @@ async function logAdminAction(action, targetUserId = null, metadata = {}) {
 async function fetchUsers() {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id,email,full_name,role,plan,status,quota_override_ai,quota_override_audio_minutes,created_at,updated_at")
+    .select(
+      "id,email,full_name,role,plan,status,quota_override_ai,quota_override_audio_minutes,created_at,updated_at",
+    )
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -77,7 +79,10 @@ async function fetchAuditLogs() {
 
 function optionList(items, active) {
   return items
-    .map((item) => `<option value="${item}" ${item === active ? "selected" : ""}>${item}</option>`)
+    .map(
+      (item) =>
+        `<option value="${item}" ${item === active ? "selected" : ""}>${item}</option>`,
+    )
     .join("");
 }
 
@@ -87,9 +92,15 @@ function filterUsers(users) {
 
     const matchesSearch =
       !q ||
-      String(user.email || "").toLowerCase().includes(q) ||
-      String(user.full_name || "").toLowerCase().includes(q) ||
-      String(user.id || "").toLowerCase().includes(q);
+      String(user.email || "")
+        .toLowerCase()
+        .includes(q) ||
+      String(user.full_name || "")
+        .toLowerCase()
+        .includes(q) ||
+      String(user.id || "")
+        .toLowerCase()
+        .includes(q);
 
     return (
       matchesSearch &&
@@ -152,7 +163,9 @@ function userRow(user) {
 }
 
 function readPayload(userId) {
-  const fields = document.querySelectorAll(`.user-admin-input[data-user-id="${userId}"]`);
+  const fields = document.querySelectorAll(
+    `.user-admin-input[data-user-id="${userId}"]`,
+  );
   const payload = {};
 
   fields.forEach((field) => {
@@ -200,7 +213,8 @@ function renderUsersTable(target) {
     </div>
   `;
 
-  target.querySelector("#userManagementCount").textContent = `${filtered.length} dari ${state.users.length} user`;
+  target.querySelector("#userManagementCount").textContent =
+    `${filtered.length} dari ${state.users.length} user`;
   bindUserActions(target);
 }
 
@@ -220,7 +234,10 @@ function bindUserActions(target) {
           payload.role = "owner";
         }
 
-        const { error } = await supabase.from("profiles").update(payload).eq("id", userId);
+        const { error } = await supabase
+          .from("profiles")
+          .update(payload)
+          .eq("id", userId);
         if (error) throw error;
 
         await logAdminAction("Update user", userId, payload);
@@ -250,7 +267,10 @@ function bindUserActions(target) {
           updated_at: new Date().toISOString(),
         };
 
-        const { error } = await supabase.from("profiles").update(payload).eq("id", userId);
+        const { error } = await supabase
+          .from("profiles")
+          .update(payload)
+          .eq("id", userId);
         if (error) throw error;
 
         await logAdminAction("Reset quota override", userId, payload);
@@ -280,27 +300,43 @@ function bindUserActions(target) {
         button.disabled = true;
         button.textContent = "Updating...";
 
-        const nextStatus = currentStatus === "suspended" ? "active" : "suspended";
-        const payload = { status: nextStatus, updated_at: new Date().toISOString() };
+        const nextStatus =
+          currentStatus === "suspended" ? "active" : "suspended";
+        const payload = {
+          status: nextStatus,
+          updated_at: new Date().toISOString(),
+        };
 
-        const { error } = await supabase.from("profiles").update(payload).eq("id", userId);
+        const { error } = await supabase
+          .from("profiles")
+          .update(payload)
+          .eq("id", userId);
         if (error) throw error;
 
-        await logAdminAction(nextStatus === "suspended" ? "Suspend user" : "Activate user", userId, payload);
-        toast(`User berhasil ${nextStatus === "suspended" ? "disuspend" : "diaktifkan"}.`);
+        await logAdminAction(
+          nextStatus === "suspended" ? "Suspend user" : "Activate user",
+          userId,
+          payload,
+        );
+        toast(
+          `User berhasil ${nextStatus === "suspended" ? "disuspend" : "diaktifkan"}.`,
+        );
 
         state.users = await fetchUsers();
         renderUsersTable(target);
       } catch (error) {
         toast(error.message, "error");
         button.disabled = false;
-        button.textContent = currentStatus === "suspended" ? "Activate" : "Suspend";
+        button.textContent =
+          currentStatus === "suspended" ? "Activate" : "Suspend";
       }
     });
   });
 }
 
-export async function renderUserManagementAdmin(targetSelector = "#userManagementAdmin") {
+export async function renderUserManagementAdmin(
+  targetSelector = "#userManagementAdmin",
+) {
   const target = document.querySelector(targetSelector);
   if (!target) return;
 
@@ -371,7 +407,8 @@ function groupMonthlyRevenue(rows) {
 }
 
 function renderChartBars(entries) {
-  if (!entries.length) return `<p class="mt-4 text-sm text-slate-400">Belum ada data revenue.</p>`;
+  if (!entries.length)
+    return `<p class="mt-4 text-sm text-slate-400">Belum ada data revenue.</p>`;
 
   const max = Math.max(...entries.map(([, value]) => value), 1);
 
@@ -405,8 +442,12 @@ export async function renderRevenueChart(targetSelector = "#revenueChart") {
       </section>
     `;
 
-    document.querySelector("#exportRevenueCsvBtn")?.addEventListener("click", () => exportRevenueCSV());
-    document.querySelector("#exportRevenuePdfBtn")?.addEventListener("click", () => exportRevenuePDF());
+    document
+      .querySelector("#exportRevenueCsvBtn")
+      ?.addEventListener("click", () => exportRevenueCSV());
+    document
+      .querySelector("#exportRevenuePdfBtn")
+      ?.addEventListener("click", () => exportRevenuePDF());
   } catch (error) {
     target.innerHTML = `<div class="rounded-3xl border border-red-400/20 bg-red-400/10 p-6 text-red-300">${error.message}</div>`;
   }
@@ -426,7 +467,10 @@ export async function renderAuditLogs(targetSelector = "#adminAuditLogs") {
         ${
           state.auditLogs.length
             ? state.auditLogs
-                .map((log) => `<div class="rounded-2xl border border-white/10 bg-slate-950/70 p-4"><div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"><b>${safeText(log.action)}</b><span class="text-xs text-slate-400">${new Date(log.created_at).toLocaleString("id-ID")}</span></div><pre class="mt-3 overflow-auto rounded-xl bg-black/30 p-3 text-xs text-slate-300">${safeText(JSON.stringify(log.metadata || {}, null, 2))}</pre></div>`)
+                .map(
+                  (log) =>
+                    `<div class="rounded-2xl border border-white/10 bg-slate-950/70 p-4"><div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"><b>${safeText(log.action)}</b><span class="text-xs text-slate-400">${new Date(log.created_at).toLocaleString("id-ID")}</span></div><pre class="mt-3 overflow-auto rounded-xl bg-black/30 p-3 text-xs text-slate-300">${safeText(JSON.stringify(log.metadata || {}, null, 2))}</pre></div>`,
+                )
                 .join("")
             : `<div class="rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-slate-400">Belum ada audit log.</div>`
         }
@@ -436,10 +480,19 @@ export async function renderAuditLogs(targetSelector = "#adminAuditLogs") {
 }
 
 export async function exportRevenueCSV() {
-  const rows = state.billingRows.length ? state.billingRows : await fetchBillingRows();
+  const rows = state.billingRows.length
+    ? state.billingRows
+    : await fetchBillingRows();
 
   const csv = [
-    ["created_at", "request_type", "status", "plan_code", "topup_code", "amount_idr"],
+    [
+      "created_at",
+      "request_type",
+      "status",
+      "plan_code",
+      "topup_code",
+      "amount_idr",
+    ],
     ...rows.map((row) => [
       row.created_at,
       row.request_type,
@@ -450,16 +503,23 @@ export async function exportRevenueCSV() {
     ]),
   ]
     .map((line) => line.map(csvEscape).join(","))
-    .join("
-");
+    .join("\n");
 
-  downloadText(`fieldpress-revenue-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  downloadText(
+    `fieldpress-revenue-${new Date().toISOString().slice(0, 10)}.csv`,
+    csv,
+  );
 }
 
 export async function exportRevenuePDF() {
-  const rows = state.billingRows.length ? state.billingRows : await fetchBillingRows();
+  const rows = state.billingRows.length
+    ? state.billingRows
+    : await fetchBillingRows();
   const approved = rows.filter((row) => row.status === "approved");
-  const total = approved.reduce((sum, row) => sum + Number(row.amount_idr || 0), 0);
+  const total = approved.reduce(
+    (sum, row) => sum + Number(row.amount_idr || 0),
+    0,
+  );
 
   const html = `
     <html>
