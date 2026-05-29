@@ -16,6 +16,21 @@ async function sendPasswordReset(email) {
   toast("Link reset password telah dikirim ke email Anda.");
 }
 
+async function ensureUserIsActive(userId) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("status, role")
+    .eq("id", userId)
+    .single();
+
+  if (error) throw error;
+
+  if (data?.status === "suspended" && data?.role !== "owner") {
+    await supabase.auth.signOut();
+    throw new Error("Akun Anda sedang dinonaktifkan oleh admin.");
+  }
+}
+
 loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -27,12 +42,14 @@ loginForm?.addEventListener("submit", async (e) => {
     const email = $("#email").value.trim();
     const password = $("#password").value;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) throw error;
+
+    await ensureUserIsActive(data.user.id);
 
     location.href = "dashboard.html";
   } catch (err) {
@@ -73,6 +90,7 @@ registerForm?.addEventListener("submit", async (e) => {
         full_name,
         role: "user",
         plan: "free",
+        status: "active",
       });
     }
 
