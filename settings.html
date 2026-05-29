@@ -1,1 +1,116 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="assets/css/style.css"><title>Settings</title></head><body><aside id="sidebar" class="sidebar p-5"><div class="mb-8 flex items-center gap-3"><div class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400 font-black text-slate-950">FP</div><div><b>FieldPress AI</b><p class="text-xs text-slate-400">AI Newsroom</p></div></div><nav class="space-y-2"><a class="nav-link" href="dashboard.html">Dashboard</a><a class="nav-link" href="reporter.html">Mode Wartawan</a><a class="nav-link" href="notulen.html">Mode Notulen</a><a class="nav-link" href="pricing.html">Pricing</a><a class="nav-link" href="settings.html">Settings</a><button id="logoutBtn" class="nav-link w-full text-left">Logout</button></nav></aside><main class="app-shell min-h-screen"><header class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 p-4 backdrop-blur"><div class="flex items-center justify-between"><button id="menuBtn" class="btn btn-ghost lg:hidden">Menu</button><div><h1 class="text-xl font-black">Settings</h1><p class="text-sm text-slate-400">Professional AI newsroom workflow</p></div><span class="badge">Live</span></div></header><div class="p-4 md:p-8"><section class="card max-w-2xl"><h2 class="text-2xl font-black">Settings</h2><p class="mt-2 text-slate-400">Update profile dan konfigurasi akun dilakukan melalui Supabase Auth dashboard atau halaman ini dapat diperluas.</p><div class="mt-6 space-y-4"><input class="input" placeholder="Nama lengkap"><select><option>wartawan</option><option>notulen</option><option>user</option></select><button class="btn btn-primary">Simpan Profile</button></div></section></div></main><script type="module" src="assets/js/app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Settings - FieldPress AI</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./assets/css/style.css" />
+</head>
+
+<body class="bg-slate-950 text-white">
+  <div class="min-h-screen md:flex">
+    <aside id="sidebar" class="w-full border-r border-white/10 bg-slate-950 p-6 md:min-h-screen md:w-64">
+      <div class="mb-10 flex items-center gap-3">
+        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-cyan-400 font-black text-black">
+          FP
+        </div>
+
+        <div>
+          <h1 class="font-black">FieldPress AI</h1>
+          <p class="text-sm text-slate-400">AI Newsroom</p>
+        </div>
+      </div>
+
+      <nav class="space-y-3 text-slate-300">
+        <a href="dashboard.html" class="block py-2 hover:text-cyan-300">Dashboard</a>
+        <a href="reporter.html" class="block py-2 hover:text-cyan-300">Mode Wartawan</a>
+        <a href="notulen.html" class="block py-2 hover:text-cyan-300">Mode Notulen</a>
+        <a href="pricing.html" class="block py-2 hover:text-cyan-300">Pricing</a>
+        <a href="settings.html" class="block py-2 text-cyan-300">Settings</a>
+        <button id="logoutBtn" class="py-2 text-left hover:text-red-300">Logout</button>
+      </nav>
+    </aside>
+
+    <main class="flex-1 p-6">
+      <section class="mx-auto max-w-2xl rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
+        <h1 class="text-3xl font-black">Settings</h1>
+
+        <p class="mt-3 text-slate-400">
+          Update profile akun FieldPress AI Anda.
+        </p>
+
+        <div id="profileStatus" class="mt-5 hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm"></div>
+
+        <form id="settingsForm" class="mt-7 space-y-4">
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-300">
+              Nama Lengkap
+            </label>
+
+            <input
+              id="fullName"
+              class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none placeholder:text-slate-500 focus:border-cyan-400"
+              placeholder="Nama lengkap"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-300">
+              Email
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              class="w-full cursor-not-allowed rounded-2xl border border-white/10 bg-slate-900/80 px-5 py-4 text-slate-400 outline-none"
+              placeholder="Email"
+              disabled
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-300">
+              Role
+            </label>
+
+            <select
+              id="role"
+              class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-5 py-4 text-white outline-none focus:border-cyan-400"
+            >
+              <option value="user">User</option>
+              <option value="wartawan">Wartawan</option>
+              <option value="notulen">Notulen</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-bold text-slate-300">
+              Plan Aktif
+            </label>
+
+            <input
+              id="plan"
+              class="w-full cursor-not-allowed rounded-2xl border border-white/10 bg-slate-900/80 px-5 py-4 text-slate-400 outline-none"
+              disabled
+            />
+          </div>
+
+          <button
+            id="saveProfileBtn"
+            type="submit"
+            class="rounded-2xl bg-cyan-400 px-6 py-4 font-black text-black hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Simpan Profile
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./assets/js/settings.js"></script>
+</body>
+</html>
