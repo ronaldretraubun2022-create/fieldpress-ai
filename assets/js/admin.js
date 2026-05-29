@@ -347,6 +347,7 @@ async function renderBillingRequests() {
   const { data, error } = await supabase
     .from("billing_requests")
     .select("*")
+    .eq("status", "pending")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -357,6 +358,26 @@ async function renderBillingRequests() {
     `;
     return;
   }
+
+  if (!data?.length) {
+    target.innerHTML = `
+      <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-slate-400">
+        Belum ada request.
+      </div>
+    `;
+    return;
+  }
+
+  const enriched = await Promise.all(
+    data.map(async (item) => ({
+      ...item,
+      user_profile: await getProfileByUserId(item.user_id),
+    })),
+  );
+
+  target.innerHTML = enriched.map((item) => billingCard(item)).join("");
+  bindBillingActions();
+}
 
   if (!data?.length) {
     target.innerHTML = `
