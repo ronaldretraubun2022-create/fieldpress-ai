@@ -711,10 +711,16 @@ async function renderBillingHistory() {
 </div>
 
       <div class="mt-6 grid gap-4">
-        ${rows.map(renderBillingHistoryCard).join("")}
-      </div>
-    </section>
-  `;
+  ${filteredRows.map(renderBillingHistoryCard).join("")}
+</div>
+</section>
+`;
+
+  document
+    .querySelector("#billingHistoryFilter")
+    ?.addEventListener("change", () => {
+      renderBillingHistory();
+    });
 }
 
 function renderBillingHistoryCard(item) {
